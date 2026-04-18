@@ -14,15 +14,27 @@ jobs:
          - name: Checkout Repository
            uses: actions/checkout@v3
 
-         - name: modify index.html
-           run: echo "<h1> Welcome to My Website</h1>" > index.html
-
-         - name: commit changes
+      #step 2: update index HTML
+         - name: Update HTML
            run: 
-            - git config --global user.name "github-actions"
-            - git config --global user.email "github-actions@users.noreply.github.com"
-            - git add index.html
-            - git commit -m "Update index.html with new content"
-            - git push
+           # Team leader update index.HTML
+               if ["${{github.actor }}" == "SWEbsterrr" ]; then
+                 sed -i '/<\/body>/i <p>Updated by Team Leader on '"$(date)"'</p>' index.html
+               fi
+
+      #step 3: update README
+         - name: Update README
+           run: |
+               echo "### Updated by ${{ github.actor }} on $(date '+%Y-%m-%d %H:%M:%S') [Commit: $(git rev-parse --short HEAD)]" >> README.md
+
+      #step 4: commit changes back to the repository
+         - name: Commit and Push changes
+           run: |
+               git config --global user.name "github-actions"
+               git config --global user.email "github-actions@users.noreply.github.com"
+               git add .
+               git commit -m "Workflow: Updated HTML and README for ${{ github.actor}}"
+               git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository}}
+               git push
            env:
-              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}
+               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}       
